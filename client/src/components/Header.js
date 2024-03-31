@@ -33,7 +33,7 @@ const Header = () => {
                         <Box display={'flex'} marginLeft="auto" marginRight={'auto'}>
                             <Tabs textColor="inherit" value={value} onChange={(e, val) => setValue}>
                                 <Tab label="Blogs" LinkComponent={Link} to="/blogs" />
-                                <Tab label="My Blogs" LinkComponent={Link} to="/my-blogs" />
+                                {/* <Tab label="My Blogs" LinkComponent={Link} to="/my-blogs" /> */}
                                 <Tab label="Create Blogs" LinkComponent={Link} to="/create-blog" />
                             </Tabs>
                         </Box>
