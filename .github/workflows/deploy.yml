@@ -1,0 +1,52 @@
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # This triggers the workflow on pushes to the 'main' branch
+  pull_request:
+    branches:
+      - main  # This triggers the workflow on pull requests to the 'main' branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'  # Make sure this matches your project
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: npm run build  # Customize this if your build script is different
+
+      - name: Archive production artifact
+        run: zip -r build.zip .  # Customize as needed
+
+  deploy:
+    needs: build
+    runs-on: self-hosted  # Set this to trigger on your local server runner
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy to Local Server
+        run: |
+          ssh user@your-server-ip << 'EOF'
+          cd /path/to/your/project
+          git pull origin main
+          npm install
+          npm run build
+          pm2 restart app  # Restart your app (assuming you're using pm2)
+          EOF
