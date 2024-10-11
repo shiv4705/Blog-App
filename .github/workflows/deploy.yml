@@ -1,52 +1,57 @@
-name: CI-CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
-      - main  # This triggers the workflow on pushes to the 'main' branch
-  pull_request:
-    branches:
-      - main  # This triggers the workflow on pull requests to the 'main' branch
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      # Step 1: Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16.x'  # Make sure this matches your project
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: npm test
-
-      - name: Build application
-        run: npm run build  # Customize this if your build script is different
-
-      - name: Archive production artifact
-        run: zip -r build.zip .  # Customize as needed
-
-  deploy:
-    needs: build
-    runs-on: self-hosted  # Set this to trigger on your local server runner
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Deploy to Local Server
+      # Step 2: List the files in the working directory (for debugging purposes)
+      - name: List working directory
         run: |
-          ssh user@your-server-ip << 'EOF'
-          cd /path/to/your/project
-          git pull origin main
+          ls -R
+      
+      # Step 3: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'  # Adjust Node.js version if needed
+
+      # Step 4: Configure Git to allow large payloads (if necessary)
+      - name: Configure Git
+        run: |
+          git config --global http.postBuffer 524288000  # 500 MB
+
+      # Step 5: Install client (frontend) dependencies
+      - name: Install client dependencies
+        run: |
+          cd client
           npm install
+      
+      # Step 6: Run client (frontend) tests
+      - name: Run client tests
+        run: |
+          cd client
+          npm test
+
+      # Step 7: Build the client (frontend)
+      - name: Build client
+        run: |
+          cd client
           npm run build
-          pm2 restart app  # Restart your app (assuming you're using pm2)
-          EOF
+      
+      # Step 8: Deploy to the server
+      - name: Deploy to server
+        run: |
+          # Add your actual deployment command/script here
+          echo "Deploying the application to the server..."
+          # Example (rsync for deployment):
+          # rsync -avz client/build/ user@your-server:/path/to/your/deployment/folder
